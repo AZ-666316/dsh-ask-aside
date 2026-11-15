@@ -174,8 +174,14 @@ async function main() {
   const clip = container3.querySelector('.daa-clip')
   assert.ok(clip, '应当有添加附件的按钮')
   assert.strictEqual(clip.disabled, false, '有当前会话时应当可以加附件')
-  assert.ok(container3.querySelector('input.daa-fileinput'), '应当有隐藏的 file input')
-  assert.ok((container3.textContent || '').includes('图片 / 文件'), '应当提示支持图片与文件')
+  assert.strictEqual((clip.textContent || '').trim(), '＋', `按钮上只应有 + 号，实际：${JSON.stringify(clip.textContent)}`)
+  const fileInput = container3.querySelector('input.daa-fileinput')
+  assert.ok(fileInput, '应当有隐藏的 file input')
+  assert.strictEqual(window.getComputedStyle(fileInput).display, 'none', '原生 file input 必须藏起来')
+  assert.strictEqual(container3.querySelector('.daa-tip'), null, '不应当再显示输入提示文字')
+  assert.strictEqual(container3.querySelector('.daa-tools'), null, '不应当再有一整行工具条')
+  const rowButtons = clip.parentNode.querySelectorAll('button')
+  assert.strictEqual(rowButtons.length, 2, `输入行里只应有「＋」和「发送」，实际 ${rowButtons.length}`)
   root3.unmount()
 
   const calls = []
