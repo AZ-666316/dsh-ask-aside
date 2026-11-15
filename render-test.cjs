@@ -106,7 +106,18 @@ function stubMap(map) {
 }
 stubMap({})
 
+// 热重载场景：上一版插件留下的 <style id="daa-style"> 还在页面里。
+// 必须先被新样式覆盖掉，否则会一直跑旧 CSS（正是"输入框不跟宽度、大图撑满"的根因）。
+const staleStyle = window.document.createElement('style')
+staleStyle.id = 'daa-style'
+staleStyle.textContent = '.daa-box{display:block}'
+window.document.head.appendChild(staleStyle)
+
 bundle.apply(ctx)
+
+const liveStyle = window.document.getElementById('daa-style')
+assert.ok(liveStyle.textContent.includes('.daa-box{display:flex'), '热重载后必须用新 CSS 覆盖旧的 <style>')
+assert.strictEqual(window.document.querySelectorAll('#daa-style').length, 1, '不应叠加多个样式标签')
 
 assert.strictEqual(captured.tabs.length, 1, '应当注册一个 tab 类型')
 assert.strictEqual(captured.slots.length, 2, '应当注册面板 + 主输入框入口')

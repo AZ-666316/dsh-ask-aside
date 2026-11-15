@@ -52,7 +52,8 @@ const document = {
   getElementById: () => null,
   addEventListener() {},
   removeEventListener() {},
-  querySelector: () => null
+  querySelector: () => null,
+  querySelectorAll: () => []
 }
 
 const roots = []

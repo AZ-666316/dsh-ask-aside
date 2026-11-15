@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.3 — 2026-11-15
+
+修掉"样式不跟着更新"这个根因。
+
+- **热重载不再吃旧样式**：`ensureStyle()` 以前看到页面里已经有 `<style id="daa-style">` 就直接 return。插件是热重载的——新 JS 装进同一个页面，但上一版留下的样式标签还在，于是界面一直跑旧 CSS（表现就是：输入框还是老的窄条、大图按原始尺寸铺满、`+` 旁边一片灰）。现在每次 `apply` 都把样式内容重写一遍，并加了回归测试。
+- **浮层不叠**：热重载时旧模块挂在 `body` 里的浮层宿主会被先清掉，不会出现两个浮层。
+- 保留 0.3.2 的布局自检（`POST /dsh-ask-aside/api/diag` → `<DSH_HOME>/dsh-ask-aside-diag.json`），用来核对真实尺寸。
+
+## 0.3.2 — 2026-11-15
+
+面板宽度跟着侧栏走，大图不再撑开界面。
+
+- `.daa-root / .daa-composer / .daa-box / .daa-input` 补 `width:100%; min-width:0; box-sizing:border-box`（`min-width:0` 是 flex 子项能收缩的关键）。
+- 缩略图锁死 `26px`（`max-width/max-height` + `flex:0 0 26px` + `object-fit:cover`），文件条补 `min-width:0`。
+- 新增布局自检：面板渲染和加附件时，把真实 DOM 尺寸链上报给宿主，方便定位到底是哪层容器把面板按窄了。
+
 ## 0.3.1 — 2026-11-15
 
 输入框对齐主聊天框，主输入框左侧补回入口。
