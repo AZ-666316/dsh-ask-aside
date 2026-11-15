@@ -181,7 +181,11 @@ async function main() {
   assert.strictEqual(container3.querySelector('.daa-tip'), null, '不应当再显示输入提示文字')
   assert.strictEqual(container3.querySelector('.daa-tools'), null, '不应当再有一整行工具条')
   const rowButtons = clip.parentNode.querySelectorAll('button')
-  assert.strictEqual(rowButtons.length, 2, `输入行里只应有「＋」和「发送」，实际 ${rowButtons.length}`)
+  assert.strictEqual(rowButtons.length, 2, `输入行里只应有「＋」和发送箭头，实际 ${rowButtons.length}`)
+  const sendButton = clip.parentNode.querySelector('.daa-send')
+  assert.ok(sendButton, '应当有发送按钮')
+  assert.strictEqual((sendButton.textContent || '').trim(), '↑', `发送按钮应是箭头，实际：${JSON.stringify(sendButton.textContent)}`)
+  assert.strictEqual(container3.querySelector('.daa-box') !== null, true, '输入框应当包在一个圆角框里（对齐主聊天框）')
   root3.unmount()
 
   const calls = []
