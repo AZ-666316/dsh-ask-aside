@@ -125,16 +125,28 @@ async function main() {
   const text = container.textContent || ''
   assert.ok(text.includes('问答'), `面板应显示标题，实际：${JSON.stringify(text.slice(0, 120))}`)
   assert.ok(/引文|选中|提问/.test(text), `面板应有空态提示，实际：${JSON.stringify(text.slice(0, 120))}`)
-  // 没有引文时不该能发问
+  // 面板本身就是入口：有当前会话就能直接问，不要求先划词
   const textarea = container.querySelector('textarea')
   assert.ok(textarea, '应当有输入框')
-  assert.strictEqual(textarea.disabled, true, '没有引文时输入框应禁用')
+  assert.strictEqual(textarea.disabled, false, '有当前会话时输入框应可用（侧栏直接问）')
+  assert.ok(String(textarea.placeholder).includes('直接问'), `占位符应提示直接问，实际：${JSON.stringify(textarea.placeholder)}`)
 
   // 浮层：没有选区时不渲染任何东西
   const popoverNodes = Array.from(window.document.body.children).filter((node) => node.getAttribute && node.getAttribute('data-ask-aside') === 'popover')
   assert.strictEqual(popoverNodes.length, 0, '未选中文字时不应挂浮层')
 
-  /* ---- 场景二：这个主对话以前问过 → 重新挂面板应当认回同一条旁支 ---- */
+  /* ---- 场景二：宿主连会话 id 都没给 → 不能乱发 ---- */
+  const containerMissing = window.document.createElement('div')
+  window.document.body.appendChild(containerMissing)
+  const rootMissing = ReactDOMClient.createRoot(containerMissing)
+  rootMissing.render(React.createElement(Panel, {}))
+  await settle(120)
+  const textareaMissing = containerMissing.querySelector('textarea')
+  assert.ok(textareaMissing, '应当有输入框')
+  assert.strictEqual(textareaMissing.disabled, true, '连会话 id 都没有时输入框应当禁用')
+  rootMissing.unmount()
+
+  /* ---- 场景三：这个主对话以前问过 → 重新挂面板应当认回同一条旁支 ---- */
   stubMap({ 'session-1': { side: 'session-side-1', strategy: 'inherit', at: Date.now() } })
   const container2 = window.document.createElement('div')
   window.document.body.appendChild(container2)
@@ -153,7 +165,7 @@ async function main() {
 
   root2.unmount()
 
-  console.log('RENDER TEST OK — 面板挂载、空态、输入框禁用、浮层静默、旁支复用 全部通过')
+  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用 全部通过')
 
   root.unmount()
   dom.window.close()
