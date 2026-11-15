@@ -165,7 +165,48 @@ async function main() {
 
   root2.unmount()
 
-  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用 全部通过')
+  /* ---- 场景四：附件入口 + 上传契约（图片走 uploadImage，文件走 upload） ---- */
+  const container3 = window.document.createElement('div')
+  window.document.body.appendChild(container3)
+  const root3 = ReactDOMClient.createRoot(container3)
+  root3.render(React.createElement(Panel, { sessionId: 'session-1' }))
+  await settle(200)
+  const clip = container3.querySelector('.daa-clip')
+  assert.ok(clip, '应当有添加附件的按钮')
+  assert.strictEqual(clip.disabled, false, '有当前会话时应当可以加附件')
+  assert.ok(container3.querySelector('input.daa-fileinput'), '应当有隐藏的 file input')
+  assert.ok((container3.textContent || '').includes('图片 / 文件'), '应当提示支持图片与文件')
+  root3.unmount()
+
+  const calls = []
+  // Node 的 URL.createObjectURL 不认 jsdom 的 File，测试里给个替身（生产环境是浏览器原生）。
+  const createdUrls = []
+  URL.createObjectURL = (blob) => { createdUrls.push(blob); return `blob:test/${createdUrls.length}` }
+  URL.revokeObjectURL = () => {}
+  const uploadCtx = {
+    get: (name) => (name === 'fileUpload' ? {
+      upload: async (sessionId, blob, name) => { calls.push(['upload', sessionId, blob.name, name]); return { ok: true, value: { receiptId: `r-file-${calls.length}` } } },
+      uploadImage: async (sessionId, blob, mediaType, name) => { calls.push(['uploadImage', sessionId, blob.name, mediaType, name]); return { ok: true, value: { receiptId: `r-image-${calls.length}` } } }
+    } : undefined)
+  }
+  const png = new window.File([Buffer.from('89504e47', 'hex')], 'shot.png', { type: 'image/png' })
+  const pdf = new window.File([Buffer.from('25504446', 'hex')], 'paper.pdf', { type: 'application/pdf' })
+  const parts = await bundle.__test__.uploadAttachments(uploadCtx, 'session-side-1', [
+    bundle.__test__.attachmentChipFrom(png),
+    bundle.__test__.attachmentChipFrom(pdf)
+  ])
+  assert.deepStrictEqual(calls.map((call) => call[0]), ['uploadImage', 'upload'], `图片应走 uploadImage、文件走 upload，实际：${JSON.stringify(calls)}`)
+  assert.deepStrictEqual(parts, [
+    { type: 'file', receiptId: 'r-image-1' },
+    { type: 'file', receiptId: 'r-file-2' }
+  ], `附件应当变成 prompt 的 file 内容块，实际：${JSON.stringify(parts)}`)
+
+  const noService = await bundle.__test__.uploadAttachments({ get: () => undefined }, 'session-1', [bundle.__test__.attachmentChipFrom(pdf)])
+    .then(() => null, (error) => error)
+  assert.ok(noService instanceof Error, '没有 fileUpload 服务时应当抛错')
+  assert.ok(noService.message.includes('fileUpload'), `错误信息应点明 fileUpload，实际：${JSON.stringify(noService.message)}`)
+
+  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用、附件入口与上传契约 全部通过')
 
   root.unmount()
   dom.window.close()

@@ -1,6 +1,6 @@
 {
   "name": "dsh-ask-aside",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "划词提问：选中正文里看不懂的术语 → 右侧栏独立会话里追问，不打断主对话；默认 fork 主会话承接全部上下文，也可切「只看引文」。",
   "type": "module",
   "license": "MIT",
