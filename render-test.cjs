@@ -57,10 +57,16 @@ const bundle = loaded[0].factory((name) => {
 
 /* ---------------- apply：注册 tab + 挂浮层 ---------------- */
 
-const captured = { tabs: [], slots: [] }
+const captured = { tabs: [], slots: [], opened: [] }
 const services = {
   sidebarRightTabs: { register: (tab) => { captured.tabs.push(tab); return () => {} } },
-  sidebarRight: { openTab() {}, openTabIn() {}, focus() {}, isExpanded: () => false, active: () => null },
+  sidebarRight: {
+    openTab: (...args) => { captured.opened.push(['openTab', ...args]) },
+    openTabIn: (...args) => { captured.opened.push(['openTabIn', ...args]) },
+    focus() {},
+    isExpanded: () => false,
+    active: () => null
+  },
   slots: {
     register: (definition, component) => { captured.slots.push({ definition, component }); return definition },
     inject: (name, run) => { run(); return () => {} }
@@ -103,8 +109,10 @@ stubMap({})
 bundle.apply(ctx)
 
 assert.strictEqual(captured.tabs.length, 1, '应当注册一个 tab 类型')
-assert.strictEqual(captured.slots.length, 1, '应当注册一个面板')
+assert.strictEqual(captured.slots.length, 2, '应当注册面板 + 主输入框入口')
 assert.strictEqual(captured.slots[0].definition.name, 'sidebar.right.pane.tab')
+assert.strictEqual(captured.slots[1].definition.name, 'conversation.input.left')
+assert.strictEqual(captured.slots[1].definition.id, 'ask-aside.entry')
 
 /* ---------------- 真正渲染面板 ---------------- */
 
@@ -216,7 +224,25 @@ async function main() {
   assert.ok(noService instanceof Error, '没有 fileUpload 服务时应当抛错')
   assert.ok(noService.message.includes('fileUpload'), `错误信息应点明 fileUpload，实际：${JSON.stringify(noService.message)}`)
 
-  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用、附件入口与上传契约 全部通过')
+  /* ---- 场景五：主输入框左侧入口（挨着 + 号）能打开问答 tab ---- */
+  const Entry = captured.slots[1].component
+  assert.strictEqual(typeof Entry, 'function', '入口应当是函数组件')
+  const entryHost = window.document.createElement('div')
+  window.document.body.appendChild(entryHost)
+  const entryRoot = ReactDOMClient.createRoot(entryHost)
+  entryRoot.render(React.createElement(Entry, { sessionId: 'session-1' }))
+  await settle(120)
+  const entryButton = entryHost.querySelector('button.daa-entry')
+  assert.ok(entryButton, '主输入框左侧应当有一个入口按钮')
+  assert.strictEqual(entryButton.getAttribute('aria-label'), '问答')
+  assert.ok(entryButton.querySelector('svg'), '入口按钮应当带图标而不是文字')
+  captured.opened.length = 0
+  entryButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+  await settle(60)
+  assert.deepStrictEqual(captured.opened[0], ['openTabIn', 'session-1', 'ask-aside', { params: { at: captured.opened[0][3].params.at } }], `点击入口应打开问答 tab，实际：${JSON.stringify(captured.opened)}`)
+  entryRoot.unmount()
+
+  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用、附件入口与上传契约、主输入框入口 全部通过')
 
   root.unmount()
   dom.window.close()
