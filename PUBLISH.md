@@ -52,7 +52,7 @@ node ../publish-ask-aside.mjs release vX.Y.Z   # 需要 $env:GH_TOKEN
 
 ## 商店收录（还没做）
 
-1. 等仓库创建满 1 天（2026-11-16 10:32 之后）；
+1. 等仓库创建满 1 天：仓库建于 `2026-11-15 10:32 UTC`（= 本地 18:32），所以 **2026-11-16 18:32（本地）之后**才能提；
 2. fork `awesome-dsh-plugin/awesome-dsh-plugin`；
 3. 新增 `data/plugins/AZ-666316__dsh-ask-aside.yml`，内容 = `publish/awesome-entry.yml`；
 4. PR 标题 `Add AZ-666316/dsh-ask-aside`，正文用 `publish/PR_BODY.md`；
