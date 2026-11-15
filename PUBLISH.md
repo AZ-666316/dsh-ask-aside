@@ -21,7 +21,7 @@ GitHub → New repository → 名字 `dsh-ask-aside` → **不要**勾 README / 
 ```bash
 # 三个占位符要换成真实地址
 # repository.url / bugs.url / homepage
-# 目前是 <your-account> 占位
+# 目前是 AZ-666316 占位
 ```
 
 （告诉我账号名，我替你改完再提交。）

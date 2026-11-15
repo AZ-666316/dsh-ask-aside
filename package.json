@@ -41,10 +41,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your-account>/dsh-ask-aside.git"
+    "url": "git+https://github.com/AZ-666316/dsh-ask-aside.git"
   },
   "bugs": {
-    "url": "https://github.com/<your-account>/dsh-ask-aside/issues"
+    "url": "https://github.com/AZ-666316/dsh-ask-aside/issues"
   },
-  "homepage": "https://github.com/<your-account>/dsh-ask-aside#readme"
+  "homepage": "https://github.com/AZ-666316/dsh-ask-aside#readme",
+  "author": "AZ-666316",
+  "publishConfig": {
+    "access": "public"
+  }
 }
