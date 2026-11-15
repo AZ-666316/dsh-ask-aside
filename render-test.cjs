@@ -69,8 +69,11 @@ const services = {
 
 const sessionStore = {
   getSnapshot: () => ({
-    ids: ['session-1'],
-    byId: { 'session-1': { id: 'session-1', cwd: 'D:/大肥鱼工作区' } },
+    ids: ['session-1', 'session-side-1'],
+    byId: {
+      'session-1': { id: 'session-1', cwd: 'D:/大肥鱼工作区' },
+      'session-side-1': { id: 'session-side-1', cwd: 'D:/大肥鱼工作区' }
+    },
     mainView: 'session-1',
     retainedBy: { mainView: 1 }
   }),
@@ -90,6 +93,12 @@ const ctx = {
   sessions: { list: sessionStore },
   workspaces: { list: { getSnapshot: () => ({ items: [] }) } }
 }
+
+// 宿主侧「主对话 → 侧线」映射的替身。先给空，后面再换成「已经有一条旁支」。
+function stubMap(map) {
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ ok: true, map }) })
+}
+stubMap({})
 
 bundle.apply(ctx)
 
@@ -125,7 +134,26 @@ async function main() {
   const popoverNodes = Array.from(window.document.body.children).filter((node) => node.getAttribute && node.getAttribute('data-ask-aside') === 'popover')
   assert.strictEqual(popoverNodes.length, 0, '未选中文字时不应挂浮层')
 
-  console.log('RENDER TEST OK — 面板挂载、空态、输入框禁用、浮层静默 全部通过')
+  /* ---- 场景二：这个主对话以前问过 → 重新挂面板应当认回同一条旁支 ---- */
+  stubMap({ 'session-1': { side: 'session-side-1', strategy: 'inherit', at: Date.now() } })
+  const container2 = window.document.createElement('div')
+  window.document.body.appendChild(container2)
+  const root2 = ReactDOMClient.createRoot(container2)
+  root2.render(React.createElement(Panel, { sessionId: 'session-1' }))
+  await settle(220)
+
+  const text2 = container2.textContent || ''
+  assert.ok(text2.includes('承接上下文'), `应当认回已有旁支并显示「承接上下文」，实际：${JSON.stringify(text2.slice(0, 160))}`)
+  const textarea2 = container2.querySelector('textarea')
+  assert.ok(textarea2, '应当有输入框')
+  assert.strictEqual(textarea2.disabled, false, '已有旁支时应当可以直接接着问')
+  const hideTag = window.document.getElementById('daa-hide')
+  assert.ok(hideTag, '应当注入隐藏侧线会话的样式')
+  assert.ok(hideTag.textContent.includes('[data-row-key="session:session-side-1"]'), `应当隐藏侧线会话行，实际：${JSON.stringify(hideTag.textContent)}`)
+
+  root2.unmount()
+
+  console.log('RENDER TEST OK — 面板挂载、空态、输入框禁用、浮层静默、旁支复用 全部通过')
 
   root.unmount()
   dom.window.close()
