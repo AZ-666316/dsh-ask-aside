@@ -37,6 +37,16 @@ dsh-ask-aside 的做法是：**每次划词提问 = 一条独立的旁支会话*
 
 ## 安装
 
+从 npm（推荐，已发布 [dsh-ask-aside](https://www.npmjs.com/package/dsh-ask-aside)）：
+
+```bash
+npm i dsh-ask-aside
+# 或
+dsh plugin install dsh-ask-aside
+```
+
+源码在 [AZ-666316/dsh-ask-aside](https://github.com/AZ-666316/dsh-ask-aside)，也可以从本地目录以 `link:` 方式开发调试。
+
 插件以普通 DSH bundle 形式安装（profile 内 `link:` 或 npm 包皆可）：
 
 ```jsonc

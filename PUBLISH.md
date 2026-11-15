@@ -1,60 +1,68 @@
-# 发布清单（v1.0.0）
+# 发布记录（v1.0.0，2026-11-15）
 
-本地已经打包好，缺的只有「往哪儿推 + 用什么身份推」。
+三个通道都通了。下面是可以照抄的状态与命令。
+
+## 线上状态
+
+| 通道 | 状态 | 地址 |
+| --- | --- | --- |
+| GitHub 仓库 | ✅ main = `5906801`，tag `v1.0.0` | https://github.com/AZ-666316/dsh-ask-aside |
+| GitHub Release | ✅ v1.0.0 | https://github.com/AZ-666316/dsh-ask-aside/releases/tag/v1.0.0 |
+| npm | ✅ latest = `1.0.0`（versions: `0.0.0-stage` 占位 + `1.0.0`） | https://www.npmjs.com/package/dsh-ask-aside |
+| 插件市场（awesome-dsh-plugin） | ⏳ 草稿就绪，未提 PR | `publish/awesome-entry.yml` |
+
+`0.0.0-stage` 是 npm 对**新包**第一次发布时先落的一个占位版本（`npm publish` 返回 202 + 「being processed」），真实版本通常一两分钟内跟上，**不需要手动 approve**。看到它别慌。
+
+## 产物
 
 | 产物 | 路径 | 说明 |
 | --- | --- | --- |
-| git 仓库 | `D:\大肥鱼工作区\dsh-plugins\dsh-ask-aside` | 分支 `master`，已打 tag `v1.0.0`，工作树干净 |
-| npm 包 | `D:\大肥鱼工作区\dsh-plugins\dsh-ask-aside\dsh-ask-aside-1.0.0.tgz` | 30 KB，7 个文件，`npm i ./dsh-ask-aside-1.0.0.tgz` 可直接装 |
-| 完整历史备份 | `D:\大肥鱼工作区\dsh-plugins\dsh-ask-aside-v1.0.0.bundle` | 54 KB，`git clone xxx.bundle` 能还原整条历史 |
+| git 仓库 | `D:\大肥鱼工作区\dsh-plugins\dsh-ask-aside` | 分支 `main`，工作树干净 |
+| npm 包 | `dsh-ask-aside-1.0.0.tgz` | 30.8 KB、7 个文件；`npm i dsh-ask-aside` 实测可装 |
+| 完整历史备份 | `..\dsh-ask-aside-v1.0.0.bundle` | 54.5 KB，`git clone xxx.bundle` 能还原整条历史 |
 
-## 还差三步
+## 复现命令（下次发版）
 
-### 1. 建一个空仓库
+```powershell
+# 1) 改功能 → 升 package.json 版本 → 测试
+node --check index.js; node --check lib/client.js
+node smoke-test.cjs; node render-test.cjs
 
-GitHub → New repository → 名字 `dsh-ask-aside` → **不要**勾 README / .gitignore / LICENSE（本地都有了）。
+# 2) 提交 + 打 tag + 推（github.com 直连不稳，走本机 Clash 代理）
+git add -A; git commit -m "release: vX.Y.Z"
+git tag vX.Y.Z
+git -c http.proxy=http://127.0.0.1:7892 -c https.proxy=http://127.0.0.1:7892 push origin main --tags
 
-记下地址，形如 `https://github.com/<你的账号>/dsh-ask-aside.git`。
+# 3) npm（token 在本地 .npmrc，已 gitignore；npm.cmd 才能用）
+$env:npm_config_cache = '<某个可写目录>\.npm-cache-tmp'
+D:\node\npm.cmd publish --access public
+D:\node\npm.cmd view dsh-ask-aside version
 
-### 2. 把地址填进 package.json
+# 4) GitHub Release
+node ../publish-ask-aside.mjs release vX.Y.Z   # 需要 $env:GH_TOKEN
 
-```bash
-# 三个占位符要换成真实地址
-# repository.url / bugs.url / homepage
-# 目前是 AZ-666316 占位
+# 5) 商店条目：改 publish/awesome-entry.yml 里的描述（如行为有变），仓库满 1 天后提 PR
 ```
 
-（告诉我账号名，我替你改完再提交。）
+## 身份与凭据（本机）
 
-### 3. 推上去
+- GitHub 账号：`AZ-666316`（`git credential fill` 里存的是 `gho_` 开头 OAuth token，可直接当 `Authorization: Bearer` 调 api.github.com）
+- npm 账号：`xjz666`（token 在 `.npmrc`，**不要提交**）
+- 全局 `http.proxy` 指向 `127.0.0.1:7892`；Clash 没开时 `git push` 会报 `Could not connect to server` 或 `RPC failed; curl 55`
 
-```bash
-cd D:/大肥鱼工作区/dsh-plugins/dsh-ask-aside
-git remote add origin https://github.com/<你的账号>/dsh-ask-aside.git
-git push -u origin master --tags
-```
+## 商店收录（还没做）
 
-## 授权方式（三选一）
+1. 等仓库创建满 1 天（2026-11-16 10:32 之后）；
+2. fork `awesome-dsh-plugin/awesome-dsh-plugin`；
+3. 新增 `data/plugins/AZ-666316__dsh-ask-aside.yml`，内容 = `publish/awesome-entry.yml`；
+4. PR 标题 `Add AZ-666316/dsh-ask-aside`，正文用 `publish/PR_BODY.md`；
+5. 等 CI 绿 + 维护者 review（会真的装插件看效果）。
 
-- **A. 我来推（推荐）**：你给一个只对这一个仓库有写权限的 fine-grained PAT（`Contents: Read and write`）。把它写进一个临时文件（比如 `D:\大肥鱼工作区\.gh-token`）告诉我路径，我用完立刻删掉，不写进 git 历史、不留在命令行里。
-- **B. 你自己推**：照上面第 3 步，git 会弹浏览器/凭据框；Windows 凭据管理器记住后，以后 `git push` 不用再输。
-- **C. 离线交接**：把 `dsh-ask-aside-v1.0.0.bundle` 拷到别的机器，`git clone dsh-ask-aside-v1.0.0.bundle` 之后再推。
-
-## 可选：发 npm
-
-DSH 插件市场按 npm 包名索引，想让别人 `plugin_manager install_bundle target=dsh-ask-aside` 直接装，就：
-
-```bash
-npm login          # 需要 npm 账号
-npm whoami         # 确认登录
-npm publish --access public
-```
-
-包名 `dsh-ask-aside` 目前没被占用（2026-11-15 查 registry 返回 404）。
+规则细节见 `publish/CHECKLIST.md`。
 
 ## 已做的验证
 
 - `node --check index.js` / `node --check lib/client.js` 通过；
-- `node smoke-test.cjs`、`node render-test.cjs` 全绿；
-- 本机 profile 已装着 1.0.0：`GET /dsh-ask-aside/api/status` → `version 1.0.0`，`/diag` 已 404（开发期自检路由清掉了）；
-- 插件从本地 `link:` 安装可用：`plugin_manager set_bundle target=dsh-ask-aside enabled=true`。
+- `node smoke-test.cjs`、`node render-test.cjs` 全绿（面板、浮层、旁支复用、附件上传契约、主输入框入口）；
+- 本机 profile 已装着 1.0.0：`GET /dsh-ask-aside/api/status` → `version 1.0.0`，开发期的 `/diag` 已 404；
+- npm：`npm view` → `1.0.0`；临时目录 `npm install dsh-ask-aside` 成功，tarball 7 个文件与本地一致。
