@@ -94,7 +94,7 @@ POST /dsh-ask-aside/api/map             写一条映射 { parent, side, strategy
 - 从页签「+」进入时面板没有引文，提问会直接 fork 当前主对话，回答里不带「你选的那句」；
 - 附件上传依赖宿主的 `fileUpload` 客户端服务（本机 0.2.2-rc.3 有），宿主没有时会在面板里明确报错；
 - 一次最多 8 个附件；图片类型限 `png/jpeg/webp/gif`，其他类型按普通文件上传；
-- v0.1 不做：嵌套追问树、历史列表、追问记录面板。
+- 暂不做：嵌套追问树、历史列表、追问记录面板。
 
 ## 开发
 
@@ -105,6 +105,16 @@ node render-test.cjs                # 真 React + jsdom 渲染：面板、浮层
 ```
 
 `lib/client.js` 是手写的浏览器模块（没有构建步骤），通过 `window.__ModuleLoader__.load({ id, factory })` 注册，`factory` 里只能 `require` 平台种子模块：`react`、`react-dom/client`。
+
+## 打包 / 发布
+
+```bash
+npm pack            # 产出 dsh-ask-aside-1.0.0.tgz（只含 files 里列的文件）
+npm publish         # 需要 npm 登录；DSH 插件市场按 npm 包名索引
+git tag v1.0.0 && git push origin main --tags
+```
+
+仓库地址在 `package.json` 的 `repository` / `homepage` / `bugs` 里，发布前替换成真实账号。
 
 ## License
 

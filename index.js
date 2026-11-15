@@ -41,26 +41,6 @@ function mapFile() {
   return join(stateDir(), 'dsh-ask-aside-map.json')
 }
 
-function diagFile() {
-  return join(stateDir(), 'dsh-ask-aside-diag.json')
-}
-
-function readDiag() {
-  try {
-    return JSON.parse(readFileSync(diagFile(), 'utf8'))
-  } catch {
-    return null
-  }
-}
-
-function writeDiag(payload) {
-  const file = diagFile()
-  mkdirSync(dirname(file), { recursive: true })
-  const temp = `${file}.${process.pid}.tmp`
-  writeFileSync(temp, JSON.stringify(payload, null, 2), 'utf8')
-  renameSync(temp, file)
-}
-
 function readMap() {
   try {
     const parsed = JSON.parse(readFileSync(mapFile(), 'utf8'))
@@ -171,25 +151,6 @@ export function apply(ctx) {
           }
           writeMap(map)
           send(res, 200, { ok: true, entry: map[parent] })
-          return
-        }
-
-        if (url.pathname === `${ROUTE}/diag` && method === 'GET') {
-          send(res, 200, { ok: true, diag: readDiag() })
-          return
-        }
-
-        if (url.pathname === `${ROUTE}/diag` && method === 'POST') {
-          const raw = await readBody(req)
-          let payload
-          try {
-            payload = JSON.parse(raw === '' ? '{}' : raw)
-          } catch {
-            send(res, 400, { ok: false, error: 'bad-json' })
-            return
-          }
-          writeDiag(payload)
-          send(res, 200, { ok: true })
           return
         }
 
