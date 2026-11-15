@@ -152,9 +152,11 @@ exportsObject.apply(ctx)
 assert.strictEqual(registeredTabs.length, 1, '应当注册一个 tab 类型')
 assert.strictEqual(registeredTabs[0].kind, 'ask-aside')
 assert.strictEqual(registeredTabs[0].title(), '问答')
-assert.strictEqual(registeredSlots.length, 1, '应当注册一个面板')
+assert.strictEqual(registeredSlots.length, 2, '应当注册一个面板 + 一个主输入框入口')
 assert.strictEqual(registeredSlots[0].name, 'sidebar.right.pane.tab')
 assert.strictEqual(registeredSlots[0].key, 'dsh-ask-aside:ask')
+assert.strictEqual(registeredSlots[1].name, 'conversation.input.left')
+assert.strictEqual(registeredSlots[1].id, 'ask-aside.entry')
 assert.strictEqual(typeof registeredSlots[0], 'object')
 
 /* ---------------- 日志折叠 ---------------- */
