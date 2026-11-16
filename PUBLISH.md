@@ -1,28 +1,30 @@
-# 发布记录（v1.0.0 已上线，v1.1.0 待发，2026-11-16）
+# 发布记录（v1.0.0、v1.1.0 均已上线，2026-11-16）
 
 三个通道都通了。下面是可以照抄的状态与命令。
 
-> **当前本地 = 1.1.0（未发布）**：新增「任务进度带」。本地 `main` = `afdae6b`，已 commit 未 push；
-> npm 上还是 `1.0.0`。等用户说「上传」再走下面「复现命令」发 1.1.0（记得 tag `v1.1.0` + Release + 商店条目描述不用改）。
+> **当前版本 = 1.1.0，已发布**：新增「任务进度带」+ 选词按钮位置调整。本地 `main` = `6bb793f`，已 push 并打 tag `v1.1.0`；
+> npm `latest = 1.1.0`；GitHub Release `v1.1.0` 已建。下一版走下面「复现命令」。
 
 ## 线上状态
 
 | 通道 | 状态 | 地址 |
 | --- | --- | --- |
-| GitHub 仓库 | ✅ 远端 main = `9235a91`（tag `v1.0.0`）；本地已到 `afdae6b`（1.1.0，未 push） | https://github.com/AZ-666316/dsh-ask-aside |
-| GitHub Release | ✅ v1.0.0 | https://github.com/AZ-666316/dsh-ask-aside/releases/tag/v1.0.0 |
-| npm | ✅ latest = `1.0.0`（versions: `0.0.0-stage` 占位 + `1.0.0`） | https://www.npmjs.com/package/dsh-ask-aside |
+| GitHub 仓库 | ✅ 远端 main = `6bb793f`（tag `v1.1.0`） | https://github.com/AZ-666316/dsh-ask-aside |
+| GitHub Release | ✅ v1.0.0、v1.1.0（id `447128168`） | https://github.com/AZ-666316/dsh-ask-aside/releases/tag/v1.1.0 |
+| npm | ✅ latest = `1.1.0`（versions: `0.0.0-stage` 占位 + `1.0.0` + `1.1.0`，39.1 KB / 7 文件） | https://www.npmjs.com/package/dsh-ask-aside |
 | 插件市场（awesome-dsh-plugin） | ✅ 已提 PR [#15889](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15889)（2026-11-16），**两道 CI 全绿**，`mergeable: clean`，等维护者 review | `publish/awesome-entry.yml` |
 
 `0.0.0-stage` 是 npm 对**新包**第一次发布时先落的一个占位版本（`npm publish` 返回 202 + 「being processed」），真实版本通常一两分钟内跟上，**不需要手动 approve**。看到它别慌。
+发完 `npm publish` 后 `npm view` 可能还显示旧版本（registry CDN 缓存），直接查元数据更准：
+`Invoke-RestMethod 'https://registry.npmjs.org/dsh-ask-aside?t=<毫秒时间戳>'` → 看 `dist-tags.latest`。
 
 ## 产物
 
 | 产物 | 路径 | 说明 |
 | --- | --- | --- |
 | git 仓库 | `D:\大肥鱼工作区\dsh-plugins\dsh-ask-aside` | 分支 `main`，工作树干净 |
-| npm 包 | `dsh-ask-aside-1.0.0.tgz` | 30.8 KB、7 个文件；`npm i dsh-ask-aside` 实测可装 |
-| 完整历史备份 | `..\dsh-ask-aside-v1.0.0.bundle` | 54.5 KB，`git clone xxx.bundle` 能还原整条历史 |
+| npm 包 | `dsh-ask-aside-1.1.0.tgz` | 39.1 KB、7 个文件 |
+| 完整历史备份 | `..\dsh-ask-aside-v1.0.0.bundle` | 54.5 KB，`git clone xxx.bundle` 能还原到 v1.0.0 为止的历史 |
 
 ## 复现命令（下次发版）
 
@@ -51,7 +53,8 @@ node ../publish-ask-aside.mjs release vX.Y.Z   # 需要 $env:GH_TOKEN
 
 - GitHub 账号：`AZ-666316`（`git credential fill` 里存的是 `gho_` 开头 OAuth token，可直接当 `Authorization: Bearer` 调 api.github.com）
 - npm 账号：`xjz666`（token 在 `.npmrc`，**不要提交**）
-- 全局 `http.proxy` 指向 `127.0.0.1:7892`；Clash 没开时 `git push` 会报 `Could not connect to server` 或 `RPC failed; curl 55`
+- 全局 `http.proxy` 指向 `127.0.0.1:7892`；Clash 没开时 `git push` 会报 `Could not connect to server` 或 `RPC failed; curl 55`。
+- **直连可用时不要走代理**：2026-11-16 22:10 用 `git -c http.proxy= -c https.proxy= push origin main` 直接推成功（`api.github.com` 也通）；上面复现命令里的 7892 写法只作备用。
 
 ## 商店收录（CI 全绿，等 review）
 
@@ -79,6 +82,7 @@ PR：[#15889](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/1588
 ## 已做的验证
 
 - `node --check index.js` / `node --check lib/client.js` 通过；
-- `node smoke-test.cjs`、`node render-test.cjs` 全绿（面板、浮层、旁支复用、附件上传契约、主输入框入口）；
-- 本机 profile 已装着 1.0.0：`GET /dsh-ask-aside/api/status` → `version 1.0.0`，开发期的 `/diag` 已 404；
-- npm：`npm view` → `1.0.0`；临时目录 `npm install dsh-ask-aside` 成功，tarball 7 个文件与本地一致。
+- `node smoke-test.cjs`、`node render-test.cjs` 全绿（面板、浮层、旁支复用、附件上传契约、主输入框入口、任务进度带、选词按钮定位）；
+- 本机 profile 装的是 link 版本：`GET /dsh-ask-aside/api/status` → `version 1.1.0`，`/diag` 已 404；
+- npm：registry 元数据 `dist-tags.latest = 1.1.0`（versions 含 `1.0.0`、`1.1.0`）；
+- 1.1.0 发布记录：tag `v1.1.0` → 提交 `6bb793f`；GitHub Release id `447128168`；npm tarball 39.1 KB / 7 文件。
