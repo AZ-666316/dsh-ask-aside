@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — 2026-11-16
+
+第四个能力：**主动汇报**。主对话跑长任务时，「问答」面板顶部直接显示进度，不用切回主对话翻。
+
+- **进度带**：任务名、第几步 / 共几步、当前动作、已用时间、预计剩余，点一下展开阶段清单（✓ 已完成 / ▶ 当前）。
+- **状态色**：`running` 蓝、`blocked` 橙（并显示待你决策的 `issue`）、`failed` 红、`done`/`cancelled` 绿且 6 秒后自动收起。
+- **三个数据源**：优先读 `dsh-progress-widget` 的 `GET /dsh-progress/status`；再读 `dsh-progress-tab` 的 `GET /dsh-progress-tab/api/status`（共用 `<DSH_HOME>/dsh-progress-tab.json`，多任务）；都没有时用本插件兜底路由 `GET /dsh-ask-aside/api/progress?session=<id>`（宿主直接读上面两个文件）。
+- **不串台**：上报里 `session` 不是当前面板的主对话就不显示；`running` 超 10 分钟没更新、结束超 2 分钟自动消失。
+- **不占两处**：面板打开期间把 `dsh-progress-widget` 的悬浮条隐藏，关掉面板自动回来。
+- 测试：`smoke-test.cjs` 加 `pickProgressTask` / `formatProgressDuration` / `progressSignature` 断言；`render-test.cjs` 加「进度带出现 → 点开展开阶段 → blocked 变橙并显示原因」整条链路。
+
 ## 1.0.0 — 2026-11-15
 
 第一个公开发布版。功能已稳定，清理开发期脚手架。

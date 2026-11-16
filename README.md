@@ -34,6 +34,7 @@ dsh-ask-aside 的做法是：**每次划词提问 = 一条独立的旁支会话*
 | 失败可见 | 上游报错 / 被中断会显示原因，不会静默空白 |
 | 不抢焦点 | 面板不夺输入焦点；主对话的草稿不会被覆盖 |
 | 与视频皮肤共存 | 装了 `dsh-video-skin` 时，它贴屏幕右下角的透明度圆钮会在「问答」面板打开期间自动让到侧栏左边（面板关掉回原位），原生 `title` 提示框换成主题化气泡；不改对方文件 |
+| 任务进度带 | 主对话在跑长任务时，面板顶部出现一条细进度带：任务名、第几步/共几步、当前动作、已用时间、预计剩余；点一下展开阶段清单。卡住（`blocked`）变橙、失败变红、完成变绿且 6 秒后自动收起。数据来源见下面「任务进度带」一节 |
 
 ## 安装
 
@@ -94,6 +95,42 @@ POST /dsh-ask-aside/api/map             写一条映射 { parent, side, strategy
 - **一条旁支**：`<DSH_HOME>/dsh-ask-aside-map.json` 记录 `主对话 id → 旁支 id`；面板打开时先查表，有就接着用，没有才 `fork`。换「新对话」时把旧的 id 归档进 `retired` 数组，用一段注入的 CSS（`[data-row-key="session:<id>"]{display:none}`）把它们从左栏藏掉 —— 只改显示，不动数据，所以「在会话中打开」仍能找到完整记录。
 
 不做的事：不写宿主状态、不读你的会话文件、不联网（除了走 DSH 自己的会话通道）。
+
+## 任务进度带（主动汇报）
+
+第三件事是「主动汇报」：agent 跑长任务时，你在侧栏问问题，还能看见主对话跑到哪一步，不用切回去翻。
+
+数据走三个来源，谁在就用谁（按顺序探测，前面的没有就换下一个）：
+
+1. **进度插件**：装了 [`dsh-progress-widget`](https://www.npmjs.com/package/dsh-progress-widget)（源码 [uuhihj/task-progress-bar](https://github.com/uuhihj/task-progress-bar)）且启用时，读它的 `GET /dsh-progress/status`（字段最全，含阶段、ETA、stale 提示）；
+2. **进度 tab 插件**：装了 `dsh-progress-tab` 时读 `GET /dsh-progress-tab/api/status`，数据文件 `<DSH_HOME>/dsh-progress-tab.json`（多任务格式，和那个 tab 共用一份数据）；
+3. **本插件兜底**：`GET /dsh-ask-aside/api/progress?session=<主会话 id>`，宿主直接读上面两个文件（`dsh-progress.json` + `dsh-progress-tab.json`），任何一个插件都没装/被禁用时也照样能显示。
+
+agent 上报协议（长任务开始写、每步更新、结束写终态）。单任务写 `<DSH_HOME>/dsh-progress.json`：
+
+```jsonc
+{
+  "task": "整理 SBRT-RDN 的 DSA 随访数据",
+  "session": "<当前主会话 id，原样填>",
+  "project": "SBRT-RDN",
+  "stages": ["读原始表", "清洗", "配对统计", "出图"],   // 可选，≤8 条
+  "current": 2,          // 当前阶段下标，从 0 开始
+  "pct": 62,             // 0-100，进度条
+  "action": "正在核对 12 只猪的血压基线",  // 可选，当前动作
+  "etaMin": 4,           // 可选，预计还要几分钟
+  "status": "running",   // running | blocked | done | failed | cancelled
+  "issue": "等你确认：「封堵组」算不算对照组？",  // blocked/failed 时写原因
+  "startedAt": 1794835500000,
+  "updatedAt": 1794835740000,
+  "endedAt": 0           // 结束时可写
+}
+```
+
+- `status` 为 `blocked` 时进度带变橙并直接显示 `issue`（需要你决策的事，在侧栏就看得到）；
+- `running` 超过 10 分钟没更新、或结束超过 2 分钟，进度带自动消失（避免把上次任务的残留当"正在跑"）；
+- `session` 不匹配当前面板的主对话时不显示——别的窗口的任务不会串到这个面板里；
+- 多任务（同时跑几件）写 `<DSH_HOME>/dsh-progress-tab.json`：`{ "tasks": [ {...同上...} ] }`，按 `session` 各取各的；
+- 面板打开期间会把 `dsh-progress-widget` 的悬浮条藏起来（同一件事不占两个位置），关掉面板它就回来。
 
 ## 已知限制
 

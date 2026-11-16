@@ -232,6 +232,37 @@ function ev(type, seq, data) { return { type, seq, data } }
   assert.strictEqual(calls, 1)
 }
 
+/* ---------------- 任务进度 ---------------- */
+
+{
+  assert.strictEqual(test.formatProgressDuration(12000), '12 秒')
+  assert.strictEqual(test.formatProgressDuration(192000), '3 分 12 秒')
+  assert.strictEqual(test.formatProgressDuration(3600000), '1 小时')
+  assert.strictEqual(test.formatProgressDuration(3840000), '1 小时 4 分')
+
+  const payload = {
+    ok: true,
+    tasks: [
+      { id: 'session-other', task: '别的会话', status: 'running' },
+      { id: 'session-1', task: '写代码', stages: ['调研', '实现', '验证'], current: 1, pct: 50, status: 'running', action: '正在编辑 lib/client.js' }
+    ]
+  }
+  const picked = test.pickProgressTask(payload, 'session-1')
+  assert.strictEqual(picked.task, '写代码')
+  assert.strictEqual(picked.current, 1)
+  assert.strictEqual(picked.pct, 50)
+  assert.deepStrictEqual(Array.from(picked.stages), ['调研', '实现', '验证'])
+  // 不是这个会话的就不显示（否则别的窗口的任务会串到这个面板）
+  assert.strictEqual(test.pickProgressTask(payload, 'session-missing'), null)
+  assert.strictEqual(test.pickProgressTask(payload, '').task, '别的会话')
+  assert.strictEqual(test.pickProgressTask({ ok: false }, 'session-1'), null)
+  // 宿主兜底路由：单条匿名 task 也认
+  assert.strictEqual(test.pickProgressTask({ ok: true, task: { task: '匿名任务', status: 'blocked' } }, 'session-2').task, '匿名任务')
+  // 签名相同 → 面板不重渲染
+  assert.strictEqual(test.progressSignature(picked), test.progressSignature(test.pickProgressTask(payload, 'session-1')))
+  assert.notStrictEqual(test.progressSignature(picked), test.progressSignature(null))
+}
+
 /* ---------------- markdown 渲染器 ---------------- */
 
 {

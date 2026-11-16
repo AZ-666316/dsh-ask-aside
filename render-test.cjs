@@ -95,7 +95,7 @@ const ctx = {
     return undefined
   },
   effect: (run) => { run() },
-  remote: { session: {} },
+  remote: { session: { follow: () => () => {} } },
   sessions: { list: sessionStore },
   workspaces: { list: { getSnapshot: () => ({ items: [] }) } }
 }
@@ -253,7 +253,61 @@ async function main() {
   assert.deepStrictEqual(captured.opened[0], ['openTabIn', 'session-1', 'ask-aside', { params: { at: captured.opened[0][3].params.at } }], `点击入口应打开问答 tab，实际：${JSON.stringify(captured.opened)}`)
   entryRoot.unmount()
 
-  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用、附件入口与上传契约、主输入框入口 全部通过')
+  /* ---- 场景六：主动汇报——主对话跑长任务时，面板顶部出现进度带（可点开看步骤/卡点） ---- */
+  // 真实环境里 /dsh-progress/status 由 dsh-progress-widget 提供（本机 disabled → 404）；
+  // 宿主兜底路由读 $DSH_HOME/dsh-progress.json，这里用 URL 路由桩模拟「插件没装、只有上报文件」。
+  let progressPayload = {
+    ok: true,
+    task: {
+      task: '写代码',
+      session: 'session-1',
+      stages: ['调研', '实现', '验证'],
+      current: 1,
+      pct: 50,
+      action: '正在编辑 lib/client.js',
+      etaMin: 3,
+      status: 'running',
+      startedAt: Date.now() - 60000,
+      updatedAt: Date.now()
+    }
+  }
+  globalThis.fetch = async (url) => {
+    const target = String(url)
+    if (target.includes('/dsh-progress/status')) return { ok: false, json: async () => ({ ok: false }) }
+    if (target.includes('/dsh-ask-aside/api/progress')) return { ok: true, json: async () => progressPayload }
+    return { ok: true, json: async () => ({ ok: true, map: {} }) }
+  }
+
+  const container4 = window.document.createElement('div')
+  window.document.body.appendChild(container4)
+  const root4 = ReactDOMClient.createRoot(container4)
+  root4.render(React.createElement(Panel, { sessionId: 'session-1' }))
+  await settle(400)
+
+  const strip = container4.querySelector('.daa-prog')
+  assert.ok(strip, '主对话在跑任务时，面板顶部应当出现进度带')
+  const stripText = strip.textContent || ''
+  assert.ok(stripText.includes('写代码'), `进度带应显示任务名，实际：${JSON.stringify(stripText)}`)
+  assert.ok(stripText.includes('2/3 实现'), `进度带应显示阶段进度，实际：${JSON.stringify(stripText)}`)
+  assert.ok(stripText.includes('正在编辑'), `进度带应显示当前动作（截断后），实际：${JSON.stringify(stripText)}`)
+  assert.ok(String(strip.innerHTML).includes('50%'), '进度条应当按 pct 展开')
+  strip.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+  await settle(80)
+  const steps = container4.querySelector('.daa-prog-steps')
+  assert.ok(steps, '点开进度带应当展开阶段清单')
+  assert.ok((steps.textContent || '').includes('▶ 2. 实现'), `阶段清单应标出当前步，实际：${JSON.stringify(steps.textContent)}`)
+
+  // 卡住：橙色 + 说明文字（"需要你决策"这类信息必须能在侧栏看到）
+  progressPayload = { ok: true, task: Object.assign({}, progressPayload.task, { status: 'blocked', issue: '等你确认阈值', pct: 100, action: '' }) }
+  await settle(1800)
+  const warnStrip = container4.querySelector('.daa-prog')
+  assert.ok(warnStrip && warnStrip.className.includes('daa-prog-warn'), `blocked 时应当是橙色状态，实际：${JSON.stringify(warnStrip && warnStrip.className)}`)
+  assert.ok((warnStrip.textContent || '').includes('卡住'), `blocked 时应当显示"卡住"，实际：${JSON.stringify(warnStrip.textContent)}`)
+  assert.ok((warnStrip.textContent || '').includes('等你确认阈值'), 'blocked 时应当显示原因')
+  root4.unmount()
+  stubMap({})
+
+  console.log('RENDER TEST OK — 面板挂载、空态、侧栏直接问、浮层静默、旁支复用、附件入口与上传契约、主输入框入口、任务进度带 全部通过')
 
   root.unmount()
   dom.window.close()
