@@ -2,5 +2,5 @@ url: https://github.com/AZ-666316/dsh-ask-aside
 name: AZ-666316/dsh-ask-aside
 category: ui
 description:
-  en: 'Ask about a passage without leaving the answer: highlight text, then ask in a separate right-sidebar session that inherits the main conversation context (fork) or carries only the quote, with streaming answers, image and file attachments, and one hidden side session per conversation.'
-  zh: '划词提问：选中回答里的文字，在右侧栏独立会话里追问，默认 fork 主会话继承上下文，也可只带引文；支持流式回答、图片与文件附件，每个主对话只保留一条隐藏的旁支会话。'
+  en: 'Highlight text in an answer and ask about it in a right-sidebar session that inherits the conversation context, with streaming answers and image/file attachments.'
+  zh: '划词提问：选中回答里的文字，在继承主对话上下文的右侧栏会话里追问，支持流式回答与图片、文件附件。'
