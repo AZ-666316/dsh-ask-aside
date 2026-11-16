@@ -1,12 +1,15 @@
-# 发布记录（v1.0.0，2026-11-15）
+# 发布记录（v1.0.0 已上线，v1.1.0 待发，2026-11-16）
 
 三个通道都通了。下面是可以照抄的状态与命令。
+
+> **当前本地 = 1.1.0（未发布）**：新增「任务进度带」。本地 `main` = `afdae6b`，已 commit 未 push；
+> npm 上还是 `1.0.0`。等用户说「上传」再走下面「复现命令」发 1.1.0（记得 tag `v1.1.0` + Release + 商店条目描述不用改）。
 
 ## 线上状态
 
 | 通道 | 状态 | 地址 |
 | --- | --- | --- |
-| GitHub 仓库 | ✅ main = `dd8b57d`，tag `v1.0.0` | https://github.com/AZ-666316/dsh-ask-aside |
+| GitHub 仓库 | ✅ 远端 main = `9235a91`（tag `v1.0.0`）；本地已到 `afdae6b`（1.1.0，未 push） | https://github.com/AZ-666316/dsh-ask-aside |
 | GitHub Release | ✅ v1.0.0 | https://github.com/AZ-666316/dsh-ask-aside/releases/tag/v1.0.0 |
 | npm | ✅ latest = `1.0.0`（versions: `0.0.0-stage` 占位 + `1.0.0`） | https://www.npmjs.com/package/dsh-ask-aside |
 | 插件市场（awesome-dsh-plugin） | ✅ 已提 PR [#15889](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15889)（2026-11-16），**两道 CI 全绿**，`mergeable: clean`，等维护者 review | `publish/awesome-entry.yml` |
