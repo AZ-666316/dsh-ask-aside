@@ -22,7 +22,7 @@
 3. 新增文件 `data/plugins/AZ-666316__dsh-ask-aside.yml`，内容 = 本仓库 `publish/awesome-entry.yml`；
 4. 提交信息例：`Add AZ-666316/dsh-ask-aside`；
 5. 向上游 `main` 发 PR，标题 `Add AZ-666316/dsh-ask-aside`，正文 = `publish/PR_BODY.md`；
-6. 等 CI 绿（会检查 manifest / 仓库年龄 / YAML 格式 / README 能重新生成）；
+6. CI 已全绿（2026-11-16 19:06）：Submission gate success + PR check run 43851117244 success（15/15 步，含 awesome-lint、4 组回归测试、整站构建），mergeable clean；
 7. 维护者 review 时会真的装插件看效果，可能会问实现细节。
 
 **不要**手工改两个 README（由 `scripts/generate-readme.mjs` 从 `data/plugins/*.yml` 生成）。
