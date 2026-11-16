@@ -263,6 +263,28 @@ function ev(type, seq, data) { return { type, seq, data } }
   assert.notStrictEqual(test.progressSignature(picked), test.progressSignature(null))
 }
 
+/* ---------------- 选词「提问」按钮的位置 ---------------- */
+
+{
+  const viewport = { width: 1000, height: 800 }
+  // 默认贴在选区上方（跟老版 study-ask 的按钮一个位置）
+  const mid = test.planPopoverPlacement({ left: 100, top: 300, right: 300, bottom: 320, width: 200, height: 20 }, viewport, null)
+  assert.strictEqual(mid.left, 200)
+  assert.strictEqual(mid.top, 262)
+  // 选区贴着屏幕顶：翻到下方
+  const top = test.planPopoverPlacement({ left: 100, top: 10, right: 300, bottom: 30, width: 200, height: 20 }, viewport, null)
+  assert.strictEqual(top.left, 200)
+  assert.strictEqual(top.top, 38)
+  // 跟宿主的「引用文本」撞上了，就换到另一边
+  const anchor = { left: 150, right: 250, top: 250, bottom: 280 }
+  const flipped = test.planPopoverPlacement({ left: 100, top: 300, right: 300, bottom: 320, width: 200, height: 20 }, viewport, anchor)
+  assert.strictEqual(flipped.left, 200)
+  assert.strictEqual(flipped.top, 328)
+  // 选区在屏幕最左边时按钮不越界
+  const left = test.planPopoverPlacement({ left: -100, top: 300, right: 10, bottom: 320, width: 110, height: 20 }, viewport, null)
+  assert.strictEqual(left.left, 36)
+}
+
 /* ---------------- markdown 渲染器 ---------------- */
 
 {

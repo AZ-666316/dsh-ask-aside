@@ -9,7 +9,8 @@
 - **三个数据源**：优先读 `dsh-progress-widget` 的 `GET /dsh-progress/status`；再读 `dsh-progress-tab` 的 `GET /dsh-progress-tab/api/status`（共用 `<DSH_HOME>/dsh-progress-tab.json`，多任务）；都没有时用本插件兜底路由 `GET /dsh-ask-aside/api/progress?session=<id>`（宿主直接读上面两个文件）。
 - **不串台**：上报里 `session` 不是当前面板的主对话就不显示；`running` 超 10 分钟没更新、结束超 2 分钟自动消失。
 - **不占两处**：面板打开期间把 `dsh-progress-widget` 的悬浮条隐藏，关掉面板自动回来。
-- 测试：`smoke-test.cjs` 加 `pickProgressTask` / `formatProgressDuration` / `progressSignature` 断言；`render-test.cjs` 加「进度带出现 → 点开展开阶段 → blocked 变橙并显示原因」整条链路。
+- **选词按钮合二为一**：老版 `dsh-study-ask` 也在选区上方挂了个「提问」按钮，两个挨在一起容易点错。现在把它的藏掉，本插件的「提问」照它的位置摆在选区上方（上方顶到屏幕就翻到下方，再让开宿主的「引用文本」），点开进的是右侧问答面板。
+- 测试：`smoke-test.cjs` 加 `pickProgressTask` / `formatProgressDuration` / `progressSignature` / `planPopoverPlacement` 断言；`render-test.cjs` 加「进度带出现 → 点开展开阶段 → blocked 变橙并显示原因」整条链路。
 
 ## 1.0.0 — 2026-11-15
 
