@@ -9,9 +9,9 @@
 | --- | --- |
 | `package.json` 声明 `dsh.bundle.patch`，根目录有 `cordis.patch.yml` | ✅ |
 | 仓库有真实可运行代码（不是占位/纯 README） | ✅（发布 1.0.0 到 npm） |
-| 仓库创建满 **1 天** | ⏳ 2026-11-15 18:32 建仓（= 10:32 UTC）→ **2026-11-16 18:32（本地）之后**才能提 |
+| 仓库创建满 **1 天** | ✅ 2026-11-15 18:32 建仓（= 10:32 UTC），2026-11-16 18:35 提交时已 24.06h |
 | 仓库带 `dsh-plugin` topic | ✅ |
-| PR 只加一个文件 `data/plugins/AZ-666316__dsh-ask-aside.yml` | 待提 |
+| PR 只加一个文件 `data/plugins/AZ-666316__dsh-ask-aside.yml` | ✅ 已提 PR [#15889](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15889)（+1 文件 / +6 行） |
 | 描述属实、无营销词、含 `: ` 要加引号 | ✅（已按此写） |
 | 分类贴合（本插件 = `ui`） | ✅ |
 

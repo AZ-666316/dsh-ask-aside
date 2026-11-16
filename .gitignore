@@ -5,3 +5,4 @@ Thumbs.db
 *.tgz
 *.bundle
 .npmrc
+.pr-state.json
